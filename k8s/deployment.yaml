@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fcg-notifications
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fcg-notifications
+  template:
+    metadata:
+      name: fcg-notifications
+      labels:
+        app: fcg-notifications
+    spec:
+      containers:
+      - name: fcg-notifications-container
+        image: drungas/fcgnotificationsworker:latest
+        envFrom:
+        - secretRef:
+            name: fcg-notifications-secret    
