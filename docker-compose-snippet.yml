@@ -1,0 +1,32 @@
+# ============================================================
+# Adicione este trecho ao docker-compose.yml do FCG.Infra.
+#
+# O RabbitMQ volta a ser a imagem padrão (sem Shovel — não é
+# mais necessário, pois o forwarder faz essa ponte agora).
+#
+# Os containers "rabbitmq-setup" e os volumes de plugin/shovel
+# que existiam na versão anterior devem ser REMOVIDOS.
+# ============================================================
+
+  notifications-forwarder:
+    build:
+      context: ../FCG.NotificationsForwarder
+      dockerfile: Dockerfile
+    container_name: fcg-notifications-forwarder
+    environment:
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=fcg_user
+      - RabbitMQ__Password=fcg_password
+      - RabbitMQ__Queues__UserCreated=fcg.user-created
+      - RabbitMQ__Queues__PaymentProcessed=payment.processed
+      - Sqs__Region=${AWS_REGION:-us-east-1}
+      - Sqs__UserCreatedQueueUrl=${SQS_URL_USER_CREATED}
+      - Sqs__PaymentProcessedQueueUrl=${SQS_URL_PAYMENT_PROCESSED}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fcg-network
+    restart: unless-stopped
